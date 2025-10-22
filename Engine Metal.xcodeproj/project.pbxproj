@@ -10,7 +10,6 @@
 		39351FB82EA71FE200361358 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39351FB72EA71FE200361358 /* Foundation.framework */; };
 		39351FBA2EA71FE800361358 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39351FB92EA71FE800361358 /* QuartzCore.framework */; };
 		39351FBC2EA71FEB00361358 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39351FBB2EA71FEB00361358 /* Metal.framework */; };
-		39351FE22EA7208900361358 /* libglfw.3.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 39351FE12EA7208900361358 /* libglfw.3.4.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -214,7 +213,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				39351FE22EA7208900361358 /* libglfw.3.4.dylib in Frameworks */,
 				39351FBC2EA71FEB00361358 /* Metal.framework in Frameworks */,
 				39351FBA2EA71FE800361358 /* QuartzCore.framework in Frameworks */,
 				39351FB82EA71FE200361358 /* Foundation.framework in Frameworks */,
@@ -754,6 +752,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				AUTOMATION_APPLE_EVENTS = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = G5V7QRAVQ8;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -774,7 +773,10 @@
 					/opt/homebrew/Cellar/glfw/3.4/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				OTHER_LDFLAGS = "-lglfw";
+				PRODUCT_BUNDLE_IDENTIFIER = com.maxshi.enginemetal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
 				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
 				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
@@ -788,6 +790,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				AUTOMATION_APPLE_EVENTS = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = G5V7QRAVQ8;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -808,7 +811,10 @@
 					/opt/homebrew/Cellar/glfw/3.4/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				OTHER_LDFLAGS = "-lglfw";
+				PRODUCT_BUNDLE_IDENTIFIER = com.maxshi.enginemetal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
 				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
 				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
