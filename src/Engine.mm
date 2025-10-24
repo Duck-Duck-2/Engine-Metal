@@ -12,10 +12,19 @@ Engine::Engine() {
     initWindow();
     
     createTriangle();
+    createDefaultLibrary();
+    createCommandQueue();
+    createRenderPipeline();
 }
 
 void Engine::run() {
     while (!glfwWindowShouldClose(glfwWindow)) {
+        // @autoreleasepool is an Objective-C feature that tells the compiler to automatically manage the memory
+        // since this is an Objective-C feature, this only works on the Objective-C (Metal) objects
+        @autoreleasepool {
+            metalDrawable = (__bridge CA::MetalDrawable*)[metalLayer nextDrawable];
+            draw();
+        }
         glfwPollEvents();
     }
 }
@@ -35,7 +44,7 @@ void Engine::initWindow() {
     glfwInit();
     // sets the hint (setting) of the client api to no api, telling GLFW to not create an OpenGL context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindow = glfwCreateWindow(800, 600, "Metal Engine", NULL, NULL);
+    glfwWindow = glfwCreateWindow(1280, 720, "Metal Engine", NULL, NULL);
     if (!glfwWindow) {
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -52,6 +61,8 @@ void Engine::initWindow() {
     // tells the metal layer which device to use
     // (__bridge id<type>) is an Objective-C tyecast to <type> without changing ownership
     metalLayer.device = (__bridge id<MTLDevice>)metalDevice;
+    // turn off VSYNC
+     metalLayer.displaySyncEnabled = NO;
     // specifies the color buffer format (BGRA, 8 bit, unsigned, normalized)
     metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     // the content view is the view that encompasses the entire window
@@ -70,9 +81,7 @@ void Engine::createTriangle() {
     };
 
     // metalDevice->newBuffer(pointer to array, size of array, resource mode)
-    triangleVertexBuffer = metalDevice->newBuffer(&triangleVertices,
-                                                  sizeof(triangleVertices),
-                                                  MTL::ResourceStorageModeShared);
+    triangleVertexBuffer = metalDevice->newBuffer(&triangleVertices, sizeof(triangleVertices), MTL::ResourceStorageModeShared);
 }
 
 void Engine::createDefaultLibrary() {
@@ -86,6 +95,11 @@ void Engine::createDefaultLibrary() {
     }
 }
 
+void Engine::createCommandQueue() {
+    // holds command buffers
+    metalCommandQueue = metalDevice->newCommandQueue();
+}
+
 void Engine::createRenderPipeline() {
     // creates an instance that represents a shader function
     // newFunction(NSString of function name)
@@ -97,22 +111,20 @@ void Engine::createRenderPipeline() {
     MTL::Function* fragmentShader = metalDefaultLibrary->newFunction(NS::String::string("fragmentShader", NS::ASCIIStringEncoding));
     assert(fragmentShader);
 
-    // creates the render pipeline descriptor, which represents the render pipeline and handles its config
-    // allocations the memory and then initializes it
+    // creates the render pipeline descriptor, which handles the config of the render pipeline
+    // allocates the memory and then initializes it
     MTL::RenderPipelineDescriptor* renderPipelineDescriptor = MTL::RenderPipelineDescriptor::alloc()->init();
     renderPipelineDescriptor->setVertexFunction(vertexShader);
     renderPipelineDescriptor->setFragmentFunction(fragmentShader);
     assert(renderPipelineDescriptor);
     MTL::PixelFormat pixelFormat = (MTL::PixelFormat)metalLayer.pixelFormat;
-    // render pipelines can have multiple render targets (in this case, we're only rendering color, so 1)
-    // render targets are just buffers
-    // attachments are just buffers that are attached to a render pass, making them render targets for that pass
-    // attachments can be color or depth
-    // this specifies the color attachment's pixel format
+    // configures the color format and operations
     renderPipelineDescriptor->colorAttachments()->object(0)->setPixelFormat(pixelFormat);
 
     NS::Error* error;
-    metalRenderPSO = metalDevice->newRenderPipelineState(renderPipelineDescriptor, &error);
+    // given the descriptor, which holds the config, creates the render pipeline state, which is the instance that actually represents a "state" or setting of the render pipeline that can be run
+    // essentially, it represents the compiled, executable rendering pipeline
+    metalRenderPipelineState = metalDevice->newRenderPipelineState(renderPipelineDescriptor, &error);
     if (error) {
         std::cerr << error->localizedDescription() << std::endl;
         error->release();
@@ -121,4 +133,56 @@ void Engine::createRenderPipeline() {
     vertexShader->release();
     fragmentShader->release();
     renderPipelineDescriptor->release();
+}
+
+void Engine::draw() {
+    sendRenderCommand();
+}
+
+void Engine::sendRenderCommand() {
+    // adds command buffer to command queue
+    // holds GPU commands
+    metalCommandBuffer = metalCommandQueue->commandBuffer();
+
+    // manages configuration of render pass, which is when a collection of rendering commands pass through the rendering pipeline together
+    MTL::RenderPassDescriptor* renderPassDescriptor = MTL::RenderPassDescriptor::alloc()->init();
+    // gets the color attachment
+    MTL::RenderPassColorAttachmentDescriptor* cd = renderPassDescriptor->colorAttachments()->object(0);
+    cd->setTexture(metalDrawable->texture());
+    // what to do with existing data in texture
+    // LoadActionClear: replace with specified clear color
+    // LoadActionLoad: keep data
+    // LoadActionDontCare: doesn't manage data; undefined data
+    cd->setLoadAction(MTL::LoadActionClear);
+    cd->setClearColor(MTL::ClearColor(41.0f/255.0f, 42.0f/255.0f, 48.0f/255.0f, 1.0));
+    // what to do with rendered data after render pass
+    // StoreActionDontCare: doesn't store data in texture; undefined texture data (if you only needed the texture as temp data for the rendering pass)
+    // StoreActionStore: stores data in texture
+    cd->setStoreAction(MTL::StoreActionStore);
+
+    MTL::RenderCommandEncoder* renderCommandEncoder = metalCommandBuffer->renderCommandEncoder(renderPassDescriptor);
+    encodeRenderCommand(renderCommandEncoder);
+    // tells Metal those are all the GPU commands
+    renderCommandEncoder->endEncoding();
+
+    // this tells Metal to automatically display the drawable after it's rendered
+    metalCommandBuffer->presentDrawable(metalDrawable);
+    // this tells Metal to execute the command buffer commands
+    metalCommandBuffer->commit();
+    // this tells Metal to wait until GPU rendering is complete before continuing execution of this CPU thread
+    // not really needed unless you need to read back data
+    // metalCommandBuffer->waitUntilCompleted();
+
+    renderPassDescriptor->release();
+}
+
+void Engine::encodeRenderCommand(MTL::RenderCommandEncoder* renderCommandEncoder) {
+    renderCommandEncoder->setRenderPipelineState(metalRenderPipelineState);
+    // this is the function to give the vertex shader the buffer
+    // setVertexBuffer(buffer, offset in bytes from start of buffer, parameter index)
+    renderCommandEncoder->setVertexBuffer(triangleVertexBuffer, 0, 0);
+    // render command
+    // drawPrimitives(primitive type, starting vertex id, num vertices)
+    // there is an overload where the second param is a pointer, and so 0 is ambiguous because it can also mean nullptr
+    renderCommandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, (int)0, 3);
 }

@@ -49,6 +49,6 @@ private:
     MTL::Library* metalDefaultLibrary;
     MTL::CommandQueue* metalCommandQueue;
     MTL::CommandBuffer* metalCommandBuffer;
-    MTL::RenderPipelineState* metalRenderPSO;
+    MTL::RenderPipelineState* metalRenderPipelineState;
     MTL::Buffer* triangleVertexBuffer;
 };
