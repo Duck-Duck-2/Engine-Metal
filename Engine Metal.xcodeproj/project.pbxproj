@@ -772,7 +772,7 @@
 					"$(inherited)",
 					/opt/homebrew/Cellar/glfw/3.4/lib,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				OTHER_LDFLAGS = "-lglfw";
 				PRODUCT_BUNDLE_IDENTIFIER = com.maxshi.enginemetal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -810,7 +810,7 @@
 					"$(inherited)",
 					/opt/homebrew/Cellar/glfw/3.4/lib,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				OTHER_LDFLAGS = "-lglfw";
 				PRODUCT_BUNDLE_IDENTIFIER = com.maxshi.enginemetal;
 				PRODUCT_NAME = "$(TARGET_NAME)";

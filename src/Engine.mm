@@ -19,9 +19,14 @@ Engine::Engine() {
 
 void Engine::run() {
     while (!glfwWindowShouldClose(glfwWindow)) {
+        if (glfwGetWindowAttrib(glfwWindow, GLFW_FOCUSED))
         // @autoreleasepool is an Objective-C feature that tells the compiler to automatically manage the memory
         // since this is an Objective-C feature, this only works on the Objective-C (Metal) objects
         @autoreleasepool {
+            // waits until a drawable is available, then returns it
+            // by default, there can only be 3 drawables at a time
+            // drawables may be unavailable if the CPU thread is running faster than the GPU
+            // or if the window compositor decides to defer the render buffer swap
             metalDrawable = (__bridge CA::MetalDrawable*)[metalLayer nextDrawable];
             draw();
         }
@@ -44,6 +49,9 @@ void Engine::initWindow() {
     glfwInit();
     // sets the hint (setting) of the client api to no api, telling GLFW to not create an OpenGL context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+//    int count = 2;
+//    glfwWindow = glfwCreateWindow(1280, 720, "Metal Engine", glfwGetMonitors(&count)[1], NULL);
+//    glfwWindow = glfwCreateWindow(1280, 720, "Metal Engine", glfwGetPrimaryMonitor(), NULL);
     glfwWindow = glfwCreateWindow(1280, 720, "Metal Engine", NULL, NULL);
     if (!glfwWindow) {
         glfwTerminate();
@@ -52,6 +60,7 @@ void Engine::initWindow() {
 
     // gets the underlying native cocoa window
     metalWindow = glfwGetCocoaWindow(glfwWindow);
+//    [metalWindow toggleFullScreen:nil];
     // a view is a section of the window that is a container for rendering components, other views, etc.
     // creates the metal layer, which is the rendering component of the view
     // [] means to send a message to a receiver [Receiver Message]
@@ -61,8 +70,8 @@ void Engine::initWindow() {
     // tells the metal layer which device to use
     // (__bridge id<type>) is an Objective-C tyecast to <type> without changing ownership
     metalLayer.device = (__bridge id<MTLDevice>)metalDevice;
-    // turn off VSYNC
-     metalLayer.displaySyncEnabled = NO;
+    // turns off VSYNC
+    metalLayer.displaySyncEnabled = NO;
     // specifies the color buffer format (BGRA, 8 bit, unsigned, normalized)
     metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     // the content view is the view that encompasses the entire window
@@ -169,9 +178,8 @@ void Engine::sendRenderCommand() {
     metalCommandBuffer->presentDrawable(metalDrawable);
     // this tells Metal to execute the command buffer commands
     metalCommandBuffer->commit();
-    // this tells Metal to wait until GPU rendering is complete before continuing execution of this CPU thread
+    // this tells Metal to wait until all the commands in the buffer are finished executing before continuing this CPU thread
     // not really needed unless you need to read back data
-    // metalCommandBuffer->waitUntilCompleted();
 
     renderPassDescriptor->release();
 }
