@@ -6,6 +6,7 @@
 //
 
 #include "Engine.hpp"
+#include <chrono>
 
 Engine::Engine() {
     initDevice();
@@ -19,7 +20,7 @@ Engine::Engine() {
 
 void Engine::run() {
     while (!glfwWindowShouldClose(glfwWindow)) {
-        if (glfwGetWindowAttrib(glfwWindow, GLFW_FOCUSED))
+        auto start = std::chrono::high_resolution_clock::now();
         // @autoreleasepool is an Objective-C feature that tells the compiler to automatically manage the memory
         // since this is an Objective-C feature, this only works on the Objective-C (Metal) objects
         @autoreleasepool {
@@ -31,6 +32,7 @@ void Engine::run() {
             draw();
         }
         glfwPollEvents();
+        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start) << std::endl;
     }
 }
 
@@ -67,7 +69,9 @@ void Engine::initWindow() {
     // (__bridge id<type>) is an Objective-C tyecast to <type> without changing ownership
     metalLayer.device = (__bridge id<MTLDevice>)metalDevice;
     // turns off VSYNC
-//    metalLayer.displaySyncEnabled = NO;
+    // even though it's direct-to-display doesn't appear to be completely unthrottled, especially in windowed mode
+    // and has lag spikes
+    metalLayer.displaySyncEnabled = NO;
     // specifies the color buffer format (BGRA, 8 bit, unsigned, normalized)
     metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     // the content view is the view that encompasses the entire window
