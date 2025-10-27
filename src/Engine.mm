@@ -67,7 +67,7 @@ void Engine::initWindow() {
     // (__bridge id<type>) is an Objective-C tyecast to <type> without changing ownership
     metalLayer.device = (__bridge id<MTLDevice>)metalDevice;
     // turns off VSYNC
-    metalLayer.displaySyncEnabled = NO;
+//    metalLayer.displaySyncEnabled = NO;
     // specifies the color buffer format (BGRA, 8 bit, unsigned, normalized)
     metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     // the content view is the view that encompasses the entire window
