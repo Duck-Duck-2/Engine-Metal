@@ -10,6 +10,8 @@
 		39351FB82EA71FE200361358 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39351FB72EA71FE200361358 /* Foundation.framework */; };
 		39351FBA2EA71FE800361358 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39351FB92EA71FE800361358 /* QuartzCore.framework */; };
 		39351FBC2EA71FEB00361358 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39351FBB2EA71FEB00361358 /* Metal.framework */; };
+		39C314632EADE6EE0083380A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39C314622EADE6EE0083380A /* Cocoa.framework */; };
+		39C314652EADE6F40083380A /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39C314642EADE6F40083380A /* MetalKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -193,6 +195,8 @@
 		39351FDF2EA7207500361358 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libglfw3.a; sourceTree = "<group>"; };
 		39351FE12EA7208900361358 /* libglfw.3.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libglfw.3.4.dylib; path = ../../../../opt/homebrew/Cellar/glfw/3.4/lib/libglfw.3.4.dylib; sourceTree = "<group>"; };
 		394F718E2E47E3D4008CFD94 /* Engine Metal */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Engine Metal"; sourceTree = BUILT_PRODUCTS_DIR; };
+		39C314622EADE6EE0083380A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		39C314642EADE6F40083380A /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -213,8 +217,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				39C314632EADE6EE0083380A /* Cocoa.framework in Frameworks */,
 				39351FBC2EA71FEB00361358 /* Metal.framework in Frameworks */,
 				39351FBA2EA71FE800361358 /* QuartzCore.framework in Frameworks */,
+				39C314652EADE6F40083380A /* MetalKit.framework in Frameworks */,
 				39351FB82EA71FE200361358 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -411,6 +417,8 @@
 		39351FB62EA71FE200361358 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				39C314642EADE6F40083380A /* MetalKit.framework */,
+				39C314622EADE6EE0083380A /* Cocoa.framework */,
 				39351FE12EA7208900361358 /* libglfw.3.4.dylib */,
 				39351FC82EA71FF900361358 /* lib */,
 				39351FD42EA7200E00361358 /* lib */,

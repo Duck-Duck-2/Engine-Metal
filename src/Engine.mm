@@ -49,9 +49,6 @@ void Engine::initWindow() {
     glfwInit();
     // sets the hint (setting) of the client api to no api, telling GLFW to not create an OpenGL context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-//    int count = 2;
-//    glfwWindow = glfwCreateWindow(1280, 720, "Metal Engine", glfwGetMonitors(&count)[1], NULL);
-//    glfwWindow = glfwCreateWindow(1280, 720, "Metal Engine", glfwGetPrimaryMonitor(), NULL);
     glfwWindow = glfwCreateWindow(1280, 720, "Metal Engine", NULL, NULL);
     if (!glfwWindow) {
         glfwTerminate();
@@ -60,7 +57,6 @@ void Engine::initWindow() {
 
     // gets the underlying native cocoa window
     metalWindow = glfwGetCocoaWindow(glfwWindow);
-//    [metalWindow toggleFullScreen:nil];
     // a view is a section of the window that is a container for rendering components, other views, etc.
     // creates the metal layer, which is the rendering component of the view
     // [] means to send a message to a receiver [Receiver Message]
@@ -180,6 +176,7 @@ void Engine::sendRenderCommand() {
     metalCommandBuffer->commit();
     // this tells Metal to wait until all the commands in the buffer are finished executing before continuing this CPU thread
     // not really needed unless you need to read back data
+//    metalCommandBuffer->waitUntilCompleted();
 
     renderPassDescriptor->release();
 }
