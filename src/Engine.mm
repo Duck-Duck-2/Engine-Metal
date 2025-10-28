@@ -20,19 +20,19 @@ Engine::Engine() {
 
 void Engine::run() {
     while (!glfwWindowShouldClose(glfwWindow)) {
-        auto start = std::chrono::high_resolution_clock::now();
+//        auto start = std::chrono::high_resolution_clock::now();
         // @autoreleasepool is an Objective-C feature that tells the compiler to automatically manage the memory
         // since this is an Objective-C feature, this only works on the Objective-C (Metal) objects
         @autoreleasepool {
+            CA::MetalDrawable* metalDrawableTemp = metalDrawable;
             // waits until a drawable is available, then returns it
             // by default, there can only be 3 drawables at a time
-            // drawables may be unavailable if the CPU thread is running faster than the GPU
-            // or if the window compositor decides to defer the render buffer swap
+            // drawables may be unavailable if the CPU thread is running faster than it takes to render previous drawables
             metalDrawable = (__bridge CA::MetalDrawable*)[metalLayer nextDrawable];
             draw();
         }
         glfwPollEvents();
-        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start) << std::endl;
+//        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start) << std::endl;
     }
 }
 
@@ -69,9 +69,13 @@ void Engine::initWindow() {
     // (__bridge id<type>) is an Objective-C tyecast to <type> without changing ownership
     metalLayer.device = (__bridge id<MTLDevice>)metalDevice;
     // turns off VSYNC
-    // even though it's direct-to-display doesn't appear to be completely unthrottled, especially in windowed mode
-    // and has lag spikes
+    // only seems to work in fullscreen mode (although only a few hundred fps rather than thousands for some reason)
+    // for some reason it's showing as Direct mode all the time even in windowed mode or when other UI is showing that should be Composited mode,
+    // and has frequent lag spikes for both windowed and fullscreen modes
     metalLayer.displaySyncEnabled = NO;
+    // decreasing drawables to 2 decreases fps but the present mode changes to Composited when in windowed or other UI is showing, as it should
+//    metalLayer.maximumDrawableCount = 2;
+    
     // specifies the color buffer format (BGRA, 8 bit, unsigned, normalized)
     metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     // the content view is the view that encompasses the entire window
