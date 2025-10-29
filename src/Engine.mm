@@ -24,7 +24,6 @@ void Engine::run() {
         // @autoreleasepool is an Objective-C feature that tells the compiler to automatically manage the memory
         // since this is an Objective-C feature, this only works on the Objective-C (Metal) objects
         @autoreleasepool {
-            CA::MetalDrawable* metalDrawableTemp = metalDrawable;
             // waits until a drawable is available, then returns it
             // by default, there can only be 3 drawables at a time
             // drawables may be unavailable if the CPU thread is running faster than it takes to render previous drawables
@@ -51,11 +50,17 @@ void Engine::initWindow() {
     glfwInit();
     // sets the hint (setting) of the client api to no api, telling GLFW to not create an OpenGL context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindow = glfwCreateWindow(1280, 720, "Metal Engine", NULL, NULL);
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
+    // takes logical pixels instead of retina pixels
+    glfwWindow = glfwCreateWindow(1280, 720, "Metal Engine", nullptr, nullptr);
     if (!glfwWindow) {
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
+    // user pointer is just a pointer that glfw can save for you if you need it
+    glfwSetWindowUserPointer(glfwWindow, this);
+    // the function that is ran when there is a window resize
+    glfwSetFramebufferSizeCallback(glfwWindow, frameBufferSizeCallback);
 
     // gets the underlying native cocoa window
     metalWindow = glfwGetCocoaWindow(glfwWindow);
@@ -68,11 +73,13 @@ void Engine::initWindow() {
     // tells the metal layer which device to use
     // (__bridge id<type>) is an Objective-C tyecast to <type> without changing ownership
     metalLayer.device = (__bridge id<MTLDevice>)metalDevice;
+    
     // turns off VSYNC
-    // only seems to work in fullscreen mode (although only a few hundred fps rather than thousands for some reason)
-    // for some reason it's showing as Direct mode all the time even in windowed mode or when other UI is showing that should be Composited mode,
+    // only seems to work properly in fullscreen mode (although only a few hundred fps rather than thousands for some reason)
+    // for some reason it's showing as Direct mode all the time even in windowed mode or when other UI is showing that should be Composited mode (vsync on does not have this issue)
     // and has frequent lag spikes for both windowed and fullscreen modes
-    metalLayer.displaySyncEnabled = NO;
+    // dual display (promotion + studio display) sees lower fps on promotion and just vsync on studio display
+//    metalLayer.displaySyncEnabled = NO;
     // decreasing drawables to 2 decreases fps but the present mode changes to Composited when in windowed or other UI is showing, as it should
 //    metalLayer.maximumDrawableCount = 2;
     
@@ -83,14 +90,26 @@ void Engine::initWindow() {
     // specifies that the layer will be used for rendering
     // the layer is necessary for GPU/Metal rendering
     // the default is basic CPU rendering on a built-in CPU-rendering surface (legacy feature from from when rendering was CPU-based)
-    metalWindow.contentView.wantsLayer = YES;
+    
+    int width, height;
+    glfwGetFramebufferSize(glfwWindow, &width, &height);
+    metalLayer.drawableSize = CGSizeMake(width, height);
+}
+
+void Engine::frameBufferSizeCallback(GLFWwindow *window, int width, int height) {
+    Engine* engine = (Engine*)glfwGetWindowUserPointer(window);
+    engine->metalLayer.drawableSize = CGSizeMake(width, height);
 }
 
 void Engine::createTriangle() {
     simd::float3 triangleVertices[] = {
         {-0.5f, -0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f},
-        { 0.0f,  0.5f, 0.0f}
+        {-0.5f,  0.5f, 0.0f},
+        
+        { 0.5f, -0.5f, 0.0f},
+        {-0.5f,  0.5f, 0.0f},
+        { 0.5f,  0.5f, 0.0f},
     };
 
     // metalDevice->newBuffer(pointer to array, size of array, resource mode)
@@ -197,5 +216,5 @@ void Engine::encodeRenderCommand(MTL::RenderCommandEncoder* renderCommandEncoder
     // render command
     // drawPrimitives(primitive type, starting vertex id, num vertices)
     // there is an overload where the second param is a pointer, and so 0 is ambiguous because it can also mean nullptr
-    renderCommandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, (int)0, 3);
+    renderCommandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, (int)0, 6);
 }
