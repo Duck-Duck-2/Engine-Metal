@@ -75,13 +75,11 @@ void Engine::initWindow() {
     metalLayer.device = (__bridge id<MTLDevice>)metalDevice;
     
     // turns off VSYNC
-    // only seems to work properly in fullscreen mode (although only a few hundred fps rather than thousands for some reason)
-    // for some reason it's showing as Direct mode all the time even in windowed mode or when other UI is showing that should be Composited mode (vsync on does not have this issue)
-    // and has frequent lag spikes for both windowed and fullscreen modes
-    // dual display (promotion + studio display) sees lower fps on promotion and just vsync on studio display
+    // for some reason always in Direct mode, even if windowed
+    // however full screen results in higher fps than windowed
+    // nextDrawable() frequently blocks, resulting lag spikes
+    // the OS is throttling presentation for whatever reason
 //    metalLayer.displaySyncEnabled = NO;
-    // decreasing drawables to 2 decreases fps but the present mode changes to Composited when in windowed or other UI is showing, as it should
-//    metalLayer.maximumDrawableCount = 2;
     
     // specifies the color buffer format (BGRA, 8 bit, unsigned, normalized)
     metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
@@ -107,8 +105,8 @@ void Engine::createTriangle() {
         { 0.5f, -0.5f, 0.0f},
         {-0.5f,  0.5f, 0.0f},
         
-        { 0.5f, -0.5f, 0.0f},
         {-0.5f,  0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f},
         { 0.5f,  0.5f, 0.0f},
     };
 
